@@ -1,0 +1,29 @@
+extends ./layout
+
+block content
+  .show
+    h1: a(href= capcus.pageUrl)= capcus.pageUrl
+    p: small Posted by #{capcus.user.name || 'Anonymous'} #{moment(capcus.createdAt).fromNow()}
+    img.img-thumbnail.capture(src=capcus.imageUrl)
+    section#comments
+      h3
+        i.glyphicon.glyphicon-comment
+        | &nbsp;Comments
+      form(action='/' + capcus.name + '/comments' method="post")
+        .form-group
+          textarea.form-control(name="comment" rows=3)
+        .form-group
+          input.btn.btn-default(type="submit" value="submit")
+      if capcus.comments && capcus.comments.length > 0
+        ul
+          each comment in capcus.comments.reverse()
+            li
+              != markdown(comment.comment, true)
+              p: small
+                if comment.user
+                  | by&nbsp;
+                  b= comment.user.name || 'Anonymous'
+                  | &nbsp;
+                | #{moment(comment.createdAt).fromNow()}
+
+

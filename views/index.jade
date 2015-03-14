@@ -1,0 +1,23 @@
+extends ./layout
+
+block content
+  each capcus in capcuses
+    .row.capcus-item
+      .col-md-4
+        a(href=capcus.url)
+          img.img-thumbnail.capture(src=capcus.imageUrl)
+      .col-md-8
+        h2: a(href=capcus.url)= capcus.pageUrl
+        p
+          | Posted by&nbsp;
+          b= capcus.user.name || 'Anonymous'
+          | &nbsp;
+          = moment(capcus.createdAt).fromNow()
+        if capcus.comments && capcus.comments.length > 0
+          p
+            i.glyphicon.glyphicon-comment
+            | &nbsp;#{capcus.comments.length} comments
+
+
+
+

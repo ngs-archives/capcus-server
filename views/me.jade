@@ -1,0 +1,15 @@
+extends ./layout
+
+block content
+  .me
+    if user
+      h1= 'Hello ' + user.name || user.id
+      form.form-inline(action="/me" method="POST")
+        .form-group
+          input.form-control(type="text" placeholder="Jane Doe" name="name" value=user.name)
+          |&nbsp;
+          button.btn.btn-primary(type="submit") Set pretty name
+    else
+      h1 Hello anonymous
+      | You have no capcues yet.
+
