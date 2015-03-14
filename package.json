@@ -51,7 +51,8 @@
     "multer": "^0.1.8",
     "aws-sdk": "^2.1.17",
     "moment": "^2.9.0",
-    "node-markdown": "^0.1.1"
+    "node-markdown": "^0.1.1",
+    "express-partials": "^0.3.0"
   },
   "engined": {
     "node": "0.11.x"

@@ -1,13 +1,11 @@
-extends ./layout
-
-block content
-  each capcus in capcuses
+each capcus in capcuses
+  if false
     .row.capcus-item
       .col-md-4
-        a(href='/' + capcus.name)
+        a(href=capcus.url)
           img.img-thumbnail.capture(src=capcus.imageUrl)
       .col-md-8
-        h2: a(href='/' + capcus.name title=capcus.pageUrl)= capcus.pageUrl
+        h2: a(href=capcus.url data-toggle="tooltip" data-placement="left" title=capcus.pageUrl)= capcus.pageUrl
         p
           | Posted by&nbsp;
           b= capcus.user.name || 'Anonymous'
@@ -17,4 +15,5 @@ block content
           p
             i.glyphicon.glyphicon-comment
             | &nbsp;#{capcus.comments.length} comments
+
 

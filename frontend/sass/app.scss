@@ -8,10 +8,17 @@ body {
 
 .capcus-item {
   padding-bottom: 2em;
+  h2 a {
+    display: inline-block;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 img.capture {
-  width: 100%;
+  max-width: 100%;
 }
 
 small {

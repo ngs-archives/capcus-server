@@ -103,16 +103,16 @@ app.getCapture = (id) ->
   new Promise (fulfill, reject) ->
     cap = null
     redisGet(id).then (_cap) ->
-      cap = _cap
+      unless cap = _cap
+        fulfill null
+        return
       getUser cap.userId
     .then (user) ->
       cap.user = user
       cap.comments ||= []
       Promise.all cap.comments.map (comment) ->
-        console.info comment
         getUser comment.userId
     .done (commentUsers) ->
-      console.info commentUsers
       for user, i in commentUsers
         cap.comments[i]?.user = user
       fulfill cap
@@ -136,25 +136,20 @@ app.use (req, res, next) ->
     do next
 
 app.get '/', (req, res) ->
-  title = 'hey'
   app.getCaptures()
     .done (capcuses) ->
       capcuses ||= []
-      capcuses.map (cap) ->
-        cap.url = req.protocol + '://' + req.get('host') + "/#{cap.name}"
-      res.render 'index', {title, capcuses}
+      res.render 'index', {capcuses}
 
 app.route('/me')
-  .post (req, res, next) ->
+  .post (req, res) ->
     unless userId = req.session.userId
       res.renderError 'No userId', 400
       return
     key = "user:#{KEY_PREFIX}:#{userId}"
     {name} = req.body
-    redisSet(key, {name})
-      .done ->
-        req.user = {id: userId, name}
-        do next
+    redisSet(key, {name}).done ->
+      res.redirect '/me'
   .all (req, res) ->
     res.render 'me', {user: req.user}
 
@@ -169,7 +164,16 @@ app.param 'capcus', (req, res, next, id) ->
 app.get '/:capcus', (req, res) ->
   {capcus} = req
   if capcus?
-    res.render 'show', {capcus}
+    redisGet("items:#{KEY_PREFIX}:#{capcus.pageUrl}")
+      .then (names) ->
+        names ||= []
+        Promise.all names.map (name) ->
+          app.getCapture KEY_PREFIX + ':' + name
+      .done (capcuses) ->
+        capcuses ||= []
+        capcuses = capcuses.filter (a) ->
+          a? && a.name isnt capcus.name
+        res.render 'show', {capcus, capcuses}
   else
     res.renderError 'Capcus not found', 404
 
@@ -181,7 +185,6 @@ app.post '/:capcus/comments', (req, res) ->
     capcus.comments ||= []
     createdAt = new Date().getTime()
     capcus.comments.push {comment,userId,createdAt}
-    console.info userId
     key = KEY_PREFIX + ':' + capcus.name
     redisSet(key, capcus).done ->
       res.redirect '/' + capcus.name + '#comments'
@@ -192,18 +195,24 @@ app.post '/capcus', (req, res) ->
   {image} = req.files
   {pageUrl, userId} = req.body
   req.session.userId = userId
-  data = { name: image.name, pageUrl, userId }
+  name = image.name
+  data = { name, pageUrl, userId }
+  itemskey = "items:#{KEY_PREFIX}:#{pageUrl}"
   uploadFile(image).then (s3url) ->
     data.createdAt = new Date().getTime()
     data.imageUrl = s3url
-    redisSet KEY_PREFIX + ':' + image.name, data
+    redisSet "#{KEY_PREFIX}:#{name}", data
+  .then ->
+    redisGet itemskey
+  .then (items) ->
+    items ||= []
+    items.push name
+    redisSet itemskey, items
+  , ->
+    redisSet itemskey, [name]
   .done ->
     data.url = req.protocol + '://' + req.get('host') + "/#{data.name}"
     res.json data
-
-app.post '/:capcus/feedbacks', (req, res) ->
-  {dataUrl} = req.body
-  res.render 'index', {dataUrl}
 
 app.listen process.env.PORT || 3000
 

@@ -2,7 +2,7 @@ extends ./layout
 
 block content
   .me
-    if user
+    if user && user.id
       h1= 'Hello ' + user.name || user.id
       form.form-inline(action="/me" method="POST")
         .form-group

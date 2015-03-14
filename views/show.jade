@@ -6,7 +6,7 @@ block content
     p: small Posted by #{capcus.user.name || 'Anonymous'} #{moment(capcus.createdAt).fromNow()}
     img.img-thumbnail.capture(src=capcus.imageUrl)
     section#comments
-      h3
+      h2
         i.glyphicon.glyphicon-comment
         | &nbsp;Comments
       form(action='/' + capcus.name + '/comments' method="post")
@@ -25,5 +25,24 @@ block content
                   b= comment.user.name || 'Anonymous'
                   | &nbsp;
                 | #{moment(comment.createdAt).fromNow()}
-
+  if capcuses.length > 0
+    section#others
+      h2
+        i.glyphicon.glyphicon-search
+        | &nbsp;Other caps
+      each capcus in capcuses
+        .row.capcus-item
+          .col-md-4
+            a(href='/' + capcus.name)
+              img.img-thumbnail.capture(src=capcus.imageUrl)
+          .col-md-8
+            p
+              | Posted by&nbsp;
+              b= capcus.user.name || 'Anonymous'
+              | &nbsp;
+              = moment(capcus.createdAt).fromNow()
+            if capcus.comments && capcus.comments.length > 0
+              p
+                i.glyphicon.glyphicon-comment
+                | &nbsp;#{capcus.comments.length} comments
 
